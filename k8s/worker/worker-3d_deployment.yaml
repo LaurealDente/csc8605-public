@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-3d
+  namespace: pfe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker-3d
+  template:
+    metadata:
+      labels:
+        app: worker-3d
+    spec:
+      containers:
+        - name: worker-3d
+          image: laurealdente/worker-3d:v1
+          imagePullPolicy: Always
+
+          command: ["python","-m","app.server"]
+
+          env:
+            - name: TORCH_HOME
+              value: /torch-cache
+
+            - name: RABBITMQ_HOST
+              value: rabbitmq
+            - name: RABBITMQ_PORT
+              value: "5672"
+            - name: RABBITMQ_USER
+              value: guest
+            - name: RABBITMQ_PASSWORD
+              value: guest
+            - name: RABBITMQ_QUEUE
+              value: tasks_3d
+            - name: MLFLOW_TRACKING_URI
+              value: http://mlflow-service:5000
+            - name: MLFLOW_MODEL_NAME
+              value: resnet_knn_3d
+            - name: TASK_TABLE
+              value: tasks_3d
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+
+          volumeMounts:
+
+            - name: worker-config
+              mountPath: /app/conf/config.yaml
+              subPath: config.yaml
+
+            - name: outputs
+              mountPath: /app/outputs
+
+            - name: torch-cache
+              mountPath: /torch-cache
+
+      volumes:
+        - name: worker-config
+          configMap:
+            name: worker-3d-config
+
+        - name: outputs
+          hostPath:
+            path: /home/mario/pfe-fast-data/database-pfe/worker_outputs_3d
+            type: DirectoryOrCreate
+
+        - name: torch-cache
+          hostPath:
+            path: /home/mario/pfe-fast-data/database-pfe/torch_cache
+            type: DirectoryOrCreate

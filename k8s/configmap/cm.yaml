@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: worker-2d-config
+  namespace: pfe
+data:
+  config.yaml: |
+    database:
+      host: "db.example.com"
+      port: 5432
+      name: "anomaly_detection"
+      user: "admin"
+      pass: "CHANGE_ME"
+
+    paths:
+      images_root: "/home/mario/database-pfe"
+
+    network:
+      images_url: "http://images.example.com"

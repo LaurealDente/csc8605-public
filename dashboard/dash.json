@@ -1,0 +1,295 @@
+{
+  "title": "PFE — Anomaly Detection Monitoring",
+  "uid": "pfe-monitoring",
+  "schemaVersion": 38,
+  "version": 2,
+  "refresh": "15s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1, "type": "row",
+      "title": "API — Latence & Throughput",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "id": 2, "type": "stat",
+      "title": "Requêtes / seconde",
+      "gridPos": { "x": 0, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": { "defaults": { "unit": "reqps", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "red", "value": 50 }] } } },
+      "targets": [{ "expr": "sum(rate(api_http_requests_total[1m]))", "legendFormat": "req/s" }]
+    },
+    {
+      "id": 3, "type": "stat",
+      "title": "Taux d'erreurs (%)",
+      "gridPos": { "x": 4, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "unit": "percent", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }, { "color": "red", "value": 5 }] } } },
+      "targets": [{ "expr": "100 * sum(rate(api_http_requests_total{status_code=~\"5..\"}[1m])) / sum(rate(api_http_requests_total[1m]))", "legendFormat": "erreurs %" }]
+    },
+    {
+      "id": 4, "type": "stat",
+      "title": "Tâches créées (total)",
+      "gridPos": { "x": 8, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] } } },
+      "targets": [{ "expr": "sum(api_tasks_created_total)", "legendFormat": "tâches" }]
+    },
+    {
+      "id": 5, "type": "stat",
+      "title": "Version modèle production",
+      "gridPos": { "x": 12, "y": 1, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] } } },
+      "targets": [{ "expr": "api_model_production_version", "legendFormat": "{{pipeline}} — {{model_name}}" }]
+    },
+    {
+      "id": 6, "type": "timeseries",
+      "title": "Latence P50 / P95 / P99",
+      "gridPos": { "x": 0, "y": 5, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "lineWidth": 2 } } },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(api_http_request_duration_seconds_bucket[1m])) by (le))", "legendFormat": "P50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(api_http_request_duration_seconds_bucket[1m])) by (le))", "legendFormat": "P95" },
+        { "expr": "histogram_quantile(0.99, sum(rate(api_http_request_duration_seconds_bucket[1m])) by (le))", "legendFormat": "P99" }
+      ]
+    },
+    {
+      "id": 7, "type": "timeseries",
+      "title": "Requêtes HTTP par endpoint",
+      "gridPos": { "x": 12, "y": 5, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "lineWidth": 2 } } },
+      "targets": [{ "expr": "sum(rate(api_http_requests_total[1m])) by (endpoint)", "legendFormat": "{{endpoint}}" }]
+    },
+    {
+      "id": 8, "type": "row",
+      "title": "MLOps — Scores & Tâches",
+      "gridPos": { "x": 0, "y": 12, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "id": 9, "type": "timeseries",
+      "title": "Tâches par statut",
+      "gridPos": { "x": 0, "y": 13, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2 } } },
+      "targets": [{ "expr": "api_tasks_by_status", "legendFormat": "{{pipeline}} — {{status}}" }]
+    },
+    {
+      "id": 10, "type": "timeseries",
+      "title": "Distribution scores d'anomalie (P50/P95)",
+      "gridPos": { "x": 12, "y": 13, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "custom": { "lineWidth": 2 } } },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(api_anomaly_score_bucket[5m])) by (le))", "legendFormat": "Score P50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(api_anomaly_score_bucket[5m])) by (le))", "legendFormat": "Score P95" }
+      ]
+    },
+    {
+      "id": 11, "type": "row",
+      "title": "Kubernetes — État des pods",
+      "gridPos": { "x": 0, "y": 20, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "id": 12, "type": "stat",
+      "title": "Pods Running",
+      "gridPos": { "x": 0, "y": 21, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } } },
+      "targets": [{ "expr": "count(kube_pod_status_phase{namespace=\"pfe\", phase=\"Running\"})", "legendFormat": "running" }]
+    },
+    {
+      "id": 13, "type": "stat",
+      "title": "Pods en erreur",
+      "gridPos": { "x": 4, "y": 21, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] } } },
+      "targets": [{ "expr": "count(kube_pod_status_phase{namespace=\"pfe\", phase=\"Failed\"}) or vector(0)", "legendFormat": "failed" }]
+    },
+    {
+      "id": 14, "type": "timeseries",
+      "title": "État des deployments (replicas disponibles)",
+      "gridPos": { "x": 0, "y": 25, "w": 24, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2 } } },
+      "targets": [{ "expr": "kube_deployment_status_replicas_available{namespace=\"pfe\"}", "legendFormat": "{{deployment}}" }]
+    },
+    {
+      "id": 15, "type": "row",
+      "title": "PostgreSQL",
+      "gridPos": { "x": 0, "y": 32, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "id": 16, "type": "timeseries",
+      "title": "Connexions actives PostgreSQL",
+      "gridPos": { "x": 0, "y": 33, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2 } } },
+      "targets": [{ "expr": "pg_stat_activity_count{datname=\"anomaly_detection\"}", "legendFormat": "connexions" }]
+    },
+    {
+      "id": 17, "type": "timeseries",
+      "title": "Transactions PostgreSQL / seconde",
+      "gridPos": { "x": 12, "y": 33, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "lineWidth": 2 } } },
+      "targets": [
+        { "expr": "rate(pg_stat_database_xact_commit{datname=\"anomaly_detection\"}[1m])", "legendFormat": "commit/s" },
+        { "expr": "rate(pg_stat_database_xact_rollback{datname=\"anomaly_detection\"}[1m])", "legendFormat": "rollback/s" }
+      ]
+    },
+    {
+      "id": 18, "type": "row",
+      "title": "Worker 2D — Inférence",
+      "gridPos": { "x": 0, "y": 40, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "id": 19, "type": "stat",
+      "title": "Tâches traitées 2D (total)",
+      "gridPos": { "x": 0, "y": 41, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } } },
+      "targets": [{ "expr": "sum(worker_tasks_processed_total)", "legendFormat": "total" }]
+    },
+    {
+      "id": 20, "type": "stat",
+      "title": "Tâches échouées 2D (total)",
+      "gridPos": { "x": 4, "y": 41, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] } } },
+      "targets": [{ "expr": "sum(worker_tasks_processed_total{status=\"failed\"}) or vector(0)", "legendFormat": "failed" }]
+    },
+    {
+      "id": 21, "type": "stat",
+      "title": "Version modèle 2D en cache",
+      "gridPos": { "x": 8, "y": 41, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] } } },
+      "targets": [{ "expr": "worker_model_cache_version", "legendFormat": "version" }]
+    },
+    {
+      "id": 22, "type": "timeseries",
+      "title": "Durée traitement 2D — P50 / P95",
+      "gridPos": { "x": 0, "y": 45, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "lineWidth": 2 } } },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(worker_task_duration_seconds_bucket[5m])) by (le))", "legendFormat": "P50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(worker_task_duration_seconds_bucket[5m])) by (le))", "legendFormat": "P95" }
+      ]
+    },
+    {
+      "id": 23, "type": "timeseries",
+      "title": "Tâches 2D traitées / seconde",
+      "gridPos": { "x": 12, "y": 45, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "lineWidth": 2 } } },
+      "targets": [
+        { "expr": "sum(rate(worker_tasks_processed_total{status=\"done\"}[1m]))", "legendFormat": "done/s" },
+        { "expr": "sum(rate(worker_tasks_processed_total{status=\"failed\"}[1m]))", "legendFormat": "failed/s" }
+      ]
+    },
+    {
+      "id": 24, "type": "timeseries",
+      "title": "Distribution scores anomalie 2D (P50/P95)",
+      "gridPos": { "x": 0, "y": 52, "w": 24, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "custom": { "lineWidth": 2 } } },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(worker_anomaly_score_bucket[5m])) by (le))", "legendFormat": "Score P50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(worker_anomaly_score_bucket[5m])) by (le))", "legendFormat": "Score P95" }
+      ]
+    },
+    {
+      "id": 30, "type": "row",
+      "title": "Worker 3D — Inférence (V1 + V2 MM-PatchCore)",
+      "gridPos": { "x": 0, "y": 59, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "id": 31, "type": "stat",
+      "title": "Tâches traitées 3D (total)",
+      "gridPos": { "x": 0, "y": 60, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } } },
+      "targets": [{ "expr": "sum(worker3d_tasks_processed_total) or vector(0)", "legendFormat": "total" }]
+    },
+    {
+      "id": 32, "type": "stat",
+      "title": "Tâches échouées 3D",
+      "gridPos": { "x": 4, "y": 60, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] } } },
+      "targets": [{ "expr": "sum(worker3d_tasks_processed_total{status=\"failed\"}) or vector(0)", "legendFormat": "failed" }]
+    },
+    {
+      "id": 33, "type": "stat",
+      "title": "Version modèle 3D V1",
+      "gridPos": { "x": 8, "y": 60, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] } } },
+      "targets": [{ "expr": "worker3d_model_cache_version", "legendFormat": "V1 k-NN" }]
+    },
+    {
+      "id": 34, "type": "stat",
+      "title": "Version modèle 3D MM-PatchCore",
+      "gridPos": { "x": 12, "y": 60, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "orange", "value": null }] } } },
+      "targets": [{ "expr": "worker3d_model_mm_cache_version", "legendFormat": "V2 MM-PatchCore" }]
+    },
+    {
+      "id": 35, "type": "timeseries",
+      "title": "Durée traitement 3D — P50 / P95",
+      "gridPos": { "x": 0, "y": 64, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "lineWidth": 2 } } },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(worker3d_task_duration_seconds_bucket[5m])) by (le))", "legendFormat": "P50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(worker3d_task_duration_seconds_bucket[5m])) by (le))", "legendFormat": "P95" }
+      ]
+    },
+    {
+      "id": 36, "type": "timeseries",
+      "title": "Tâches 3D traitées / seconde",
+      "gridPos": { "x": 12, "y": 64, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "lineWidth": 2 } } },
+      "targets": [
+        { "expr": "sum(rate(worker3d_tasks_processed_total{status=\"done\"}[1m]))", "legendFormat": "done/s" },
+        { "expr": "sum(rate(worker3d_tasks_processed_total{status=\"failed\"}[1m]))", "legendFormat": "failed/s" }
+      ]
+    },
+    {
+      "id": 37, "type": "timeseries",
+      "title": "Distribution scores anomalie 3D (P50/P95)",
+      "gridPos": { "x": 0, "y": 71, "w": 24, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "custom": { "lineWidth": 2 } } },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(worker3d_anomaly_score_bucket[5m])) by (le))", "legendFormat": "Score P50" },
+        { "expr": "histogram_quantile(0.95, sum(rate(worker3d_anomaly_score_bucket[5m])) by (le))", "legendFormat": "Score P95" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-server
+  namespace: pfe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: image-server
+  template:
+    metadata:
+      labels:
+        app: image-server
+    spec:
+      containers:
+      - name: image-server
+        image: halverneus/static-file-server:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        env:
+        - name: FOLDER
+          value: /web
+        volumeMounts:
+        - name: images
+          mountPath: /web
+        resources: {}
+      volumes:
+      - name: images
+        hostPath:
+          path: /home/mario/pfe-fast-data/database-pfe/images_storage

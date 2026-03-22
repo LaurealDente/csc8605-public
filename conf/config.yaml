@@ -1,0 +1,12 @@
+database:
+  host: "db.example.com"
+  port: 5432
+  name: "anomaly_detection"
+  user: "admin"
+  pass: "password"
+
+paths:
+  images_root: "/home/mario/pfe-fast-data/database-pfe/images_storage"
+
+network:
+  images_url: "http://images.example.com"

@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Env
+.env
+.venv/
+venv/
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Outputs / artifacts
+outputs/
+worker_2d/outputs/
+worker_2d/models/**/embeddings.npy
+worker_2d/models/**/patch_bank.npy
+normal_images*.txt
+task_test*.json
+test_loaded_image.jpg
+
+# Torch cache
+worker_2d/torch_cache/
+.cache/torch/
+worker_2d/models/resnet_knn_v2/patch_bank.npy
+
+worker_2d/models/resnet_knn_v2/patch_bank.npy
+__pycache__/
+*.pyc
+worker_2d/app_src/outputs/
+worker_2d/app_src/models/
+flows/__pycache__/
