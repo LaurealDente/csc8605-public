@@ -313,9 +313,9 @@ Prefect UI ──trigger──▶ Flow Prefect ──SSH──▶ Cluster Slurm
 ---
 
 ## Auteurs
-- **Tatiana Niauronis - Cheffe de projet**
-- **Selim Jerbi - Spécialiste IA**
-- **Alexandre Lauret - Architecture Logicielle**
+- **Tatiana Niauronis**
+- **Selim Jerbi**
+- **Alexandre Lauret**
 
 ***Encadrement : Julien Roméro - Télécom SudParis***
 
