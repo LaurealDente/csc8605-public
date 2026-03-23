@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prefect
+  namespace: pfe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prefect
+  template:
+    metadata:
+      labels:
+        app: prefect
+    spec:
+      containers:
+      - name: prefect
+        image: prefecthq/prefect:3-python3.11
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "400m"
+            memory: "768Mi"
+        ports:
+        - containerPort: 4200
+        command: ["prefect", "server", "start", "--host", "0.0.0.0"]
+        env:
+        - name: PREFECT_API_URL
+          value: "https://prefect.exemple.com/api"
+        - name: PREFECT_SERVER_ALLOW_ORIGINS
+          value: '["*"]'
+        - name: PREFECT_API_DATABASE_CONNECTION_URL
+          value: "postgresql+asyncpg://${DB_USER}:${DB_PASS}@postgres:5432/prefect_db"

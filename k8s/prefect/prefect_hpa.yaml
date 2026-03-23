@@ -1,0 +1,20 @@
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: prefect-hpa
+  namespace: pfe
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: prefect
+  minReplicas: 1
+  maxReplicas: 1 # Pour l'instant, on reste sur 1 seul exemplaire (Prefect est stable)
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80

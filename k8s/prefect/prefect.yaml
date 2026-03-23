@@ -1,0 +1,46 @@
+name: pfe-training-flows
+pull:
+  - prefect.deployments.steps.set_working_directory:
+      directory: /app
+deployments:
+  - name: weekly-training
+    entrypoint: flows/training_flow.py:train_resnet_knn_flow
+    work_pool:
+      name: pfe-pool
+    schedule:
+      cron: "0 2 * * 1"
+      timezone: "Europe/Paris"
+    parameters:
+      backbone: resnet18
+      table_name: mvtec_anomaly_detection
+      batch_size: 64
+      num_workers: 0
+      model_version: auto
+    tags:
+      - training
+      - slurm
+      - mlops
+    description: "Entraînement hebdomadaire ResNet+kNN 2D sur Slurm H100."
+  - name: weekly-training-3d-mm
+    entrypoint: flows/training_flow_3d_mm.py:train_mm_patchcore_3d_flow
+    work_pool:
+      name: pfe-pool
+    schedule:
+      cron: "0 4 * * 1"
+      timezone: "Europe/Paris"
+    parameters:
+      table_name: mvtec_3d_anomaly_detection
+      category: ""
+      model_version: auto
+      alpha_rgb: 0.5
+      alpha_depth: 0.5
+      n_neighbors: 1
+      max_patches: 200000
+      image_size: 224
+    tags:
+      - training
+      - slurm
+      - mlops
+      - 3d
+      - mm-patchcore
+    description: "Entraînement hebdomadaire Multimodal PatchCore 3D (RGB+Depth) sur Slurm H100."

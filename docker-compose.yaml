@@ -1,0 +1,37 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports: ["5672:5672", "15672:15672"]
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    environment:
+      - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
+      - RABBIT_QUEUE=tasks_2d
+      - CONFIG_PATH=/app/conf/config.yaml
+    volumes:
+      - /home/mario/database-pfe/images_storage:/home/mario/database-pfe/images_storage
+    ports:
+      - "8000:8000"
+    depends_on: [rabbitmq]
+
+  worker_2d:
+    build:
+      context: .
+      dockerfile: worker_2d/Dockerfile
+    environment:
+      - RABBIT_URL=amqp://guest:guest@rabbitmq:5672/
+      - RABBIT_QUEUE=tasks_2d
+      - IMAGES_URL_BASE=http://os.getenv("DB_IP", "10.0.0.1"):9000
+      - OUTPUT_ROOT=/home/mario/database-pfe/images_storage/outputs
+      - DB_HOST=os.getenv("DB_IP", "10.0.0.1")
+      - DB_PORT=5432
+      - DB_NAME=anomaly_detection
+      - DB_USER=admin
+      - DB_PASS=password
+      - TASK_TABLE=tasks_2d
+    volumes:
+      - /home/mario/database-pfe/images_storage:/home/mario/database-pfe/images_storage
+    depends_on: [rabbitmq]

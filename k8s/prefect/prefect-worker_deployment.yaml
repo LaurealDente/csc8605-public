@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prefect-worker
+  namespace: pfe
+  labels:
+    app: prefect-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prefect-worker
+  template:
+    metadata:
+      labels:
+        app: prefect-worker
+    spec:
+      containers:
+        - name: prefect-worker
+          image: laurealdente/prefect-worker:v8
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              cd /app
+              prefect deploy --all
+              prefect worker start --pool pfe-pool --type process
+          env:
+            - name: PREFECT_API_URL
+              value: "http://prefect-service:4200/api"
+            - name: SLURM_HOST
+              value: "slurm"
+            - name: SLURM_PORT
+              value: "22"
+            - name: SLURM_USER
+              value: "alauret"
+            - name: SLURM_SSH_KEY_PATH
+              value: "/secrets/slurm/ssh_key"
+            - name: SLURM_PROJECT_DIR
+              value: "/mnt/hdd/homes/alauret/csc8605"
+            - name: SLURM_MODELS_DIR
+              value: "/mnt/hdd/homes/alauret/csc8605/models"
+            - name: SLURM_CONDA_ENV
+              value: "csc8605"
+            - name: SLURM_PARTITION
+              value: "normal"
+            - name: SLURM_GPUS
+              value: "1"
+            - name: SLURM_CPUS
+              value: "8"
+            - name: SLURM_MEM
+              value: "32G"
+            - name: SLURM_TIME
+              value: "02:00:00"
+            - name: SLURM_POLL_INTERVAL
+              value: "30"
+            - name: SLURM_JOB_TIMEOUT
+              value: "10800"
+            - name: MLFLOW_TRACKING_URI
+              value: "https://mlflow.exemple.com"
+            - name: MLFLOW_MODEL_NAME
+              value: "resnet_knn_2d"
+          volumeMounts:
+            - name: slurm-ssh-secret
+              mountPath: /secrets/slurm
+              readOnly: true
+      volumes:
+        - name: slurm-ssh-secret
+          secret:
+            secretName: slurm-ssh-key
+            defaultMode: 0400

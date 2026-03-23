@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mlflow-ingress
+  namespace: pfe
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
+    traefik.frontend.headers.customRequestHeaders: "X-Forwarded-Proto: https||X-Forwarded-Host: mlflow.exemple.com"
+spec:
+  tls:
+    - hosts:
+        - mlflow.exemple.com
+      secretName: mlflow-tls-cert
+  rules:
+    - host: mlflow.exemple.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mlflow-service
+                port:
+                  number: 5000

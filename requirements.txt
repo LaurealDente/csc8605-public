@@ -1,0 +1,14 @@
+pandas
+pyyaml
+tqdm
+requests
+sqlalchemy
+psycopg2-binary
+pillow
+matplotlib
+scikit-learn
+--extra-index-url https://download.pytorch.org/whl/cu121
+torch
+torchvision
+python-multipart
+mlflow==2.19.0

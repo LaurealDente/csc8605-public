@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow
+  namespace: pfe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mlflow
+  template:
+    metadata:
+      labels:
+        app: mlflow
+    spec:
+      containers:
+      - name: mlflow
+        image: ghcr.io/mlflow/mlflow:v2.19.0
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "512Mi"
+          limits:
+            cpu: "500m"
+            memory: "2Gi"
+        ports:
+        - containerPort: 5000
+        command: ["/bin/sh", "-c"]
+        args:
+          - "pip install psycopg2-binary --quiet && mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri postgresql://${DB_USER}:${DB_PASS}@postgres:5432/anomaly_detection --default-artifact-root mlflow-artifacts:/ --artifacts-destination /mlflow-artifacts --serve-artifacts"
+        env:
+        - name: MLFLOW_TRACKING_URI
+          value: "http://localhost:5000"
+        - name: GUNICORN_CMD_ARGS
+          value: "--forwarded-allow-ips='*' --access-logfile -"
+        volumeMounts:
+        - name: mlflow-artifacts
+          mountPath: /mlflow-artifacts
+      volumes:
+      - name: mlflow-artifacts
+        persistentVolumeClaim:
+          claimName: mlflow-pvc

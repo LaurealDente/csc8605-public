@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-2d-config
+  namespace: pfe
+data:
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "anomaly_detection"
+  DB_USER: "admin"
+  DB_PASS: "CHANGE_ME"
+  TASK_TABLE: "tasks_2d"
+
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_USER: "guest"
+  RABBITMQ_PASSWORD: "guest"
+  RABBITMQ_QUEUE: "tasks_2d"
+
+  IMAGES_STORAGE_ROOT: "/images_storage"
+  IMAGES_PUBLIC_BASE: "http://images.exemple.com"
+
+  MLFLOW_TRACKING_URI: "http://mlflow-service:5000"
+  MLFLOW_MODEL_NAME: "resnet_knn_2d"
+  
+  WORKER_ADMIN_URL: "http://worker-2d-service:8080"

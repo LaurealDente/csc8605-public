@@ -1,0 +1,10 @@
+{
+  "task_id": 1,
+  "task_type": "2d_anomaly",
+  "image_path": "mvtec_anomaly_detection/toothbrush/test/defective/009.png",
+  "image_url": null,
+  "category": "bottle",
+  "model_name": "resnet_knn_mvtec_anomaly_detection",
+  "model_version": "v2",
+  "output_prefix": "results/tasks/2"
+}

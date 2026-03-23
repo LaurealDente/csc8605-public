@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cleanup-dead-pods
+  namespace: pfe
+spec:
+  schedule: "0 3 * * *"   # chaque nuit à 3h
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: kube-state-metrics  # réutilise le SA existant
+          containers:
+          - name: cleanup
+            image: bitnami/kubectl:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              kubectl delete pods -n pfe --field-selector=status.phase=Failed --ignore-not-found
+              kubectl delete pods -n pfe --field-selector=status.phase=Succeeded --ignore-not-found
+          restartPolicy: OnFailure

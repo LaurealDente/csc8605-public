@@ -1,0 +1,128 @@
+{
+  "title": "Infrastructure Kubernetes — PFE",
+  "uid": "pfe-infra-k8s",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "15s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1, "type": "row",
+      "title": "Pods & Deployments",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 }
+    },
+    {
+      "id": 2, "type": "stat",
+      "title": "Pods Running",
+      "gridPos": { "x": 0, "y": 1, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } } },
+      "targets": [{ "expr": "count(kube_pod_status_phase{namespace=\"pfe\", phase=\"Running\"})", "legendFormat": "running" }]
+    },
+    {
+      "id": 3, "type": "stat",
+      "title": "Pods Pending",
+      "gridPos": { "x": 6, "y": 1, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 1 }] } } },
+      "targets": [{ "expr": "count(kube_pod_status_phase{namespace=\"pfe\", phase=\"Pending\"}) or vector(0)", "legendFormat": "pending" }]
+    },
+    {
+      "id": 4, "type": "stat",
+      "title": "Pods Failed",
+      "gridPos": { "x": 12, "y": 1, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] } } },
+      "targets": [{ "expr": "count(kube_pod_status_phase{namespace=\"pfe\", phase=\"Failed\"}) or vector(0)", "legendFormat": "failed" }]
+    },
+    {
+      "id": 5, "type": "stat",
+      "title": "Restarts total (30min)",
+      "gridPos": { "x": 18, "y": 1, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "thresholds" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 3 }, { "color": "red", "value": 10 }] } } },
+      "targets": [{ "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"pfe\"}[30m]))", "legendFormat": "restarts" }]
+    },
+    {
+      "id": 6, "type": "timeseries",
+      "title": "Replicas disponibles par deployment",
+      "gridPos": { "x": 0, "y": 5, "w": 24, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2 } } },
+      "targets": [{ "expr": "kube_deployment_status_replicas_available{namespace=\"pfe\"}", "legendFormat": "{{deployment}}" }]
+    },
+    {
+      "id": 7, "type": "timeseries",
+      "title": "Restarts par pod",
+      "gridPos": { "x": 0, "y": 12, "w": 24, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2 } } },
+      "targets": [{ "expr": "increase(kube_pod_container_status_restarts_total{namespace=\"pfe\"}[5m]) > 0", "legendFormat": "{{pod}}" }]
+    },
+    {
+      "id": 10, "type": "row",
+      "title": "PostgreSQL",
+      "gridPos": { "x": 0, "y": 19, "w": 24, "h": 1 }
+    },
+    {
+      "id": 11, "type": "timeseries",
+      "title": "Connexions actives PostgreSQL",
+      "gridPos": { "x": 0, "y": 20, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2 } } },
+      "targets": [{ "expr": "pg_stat_activity_count{datname=\"anomaly_detection\"}", "legendFormat": "connexions" }]
+    },
+    {
+      "id": 12, "type": "timeseries",
+      "title": "Transactions PostgreSQL / seconde",
+      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "ops", "custom": { "lineWidth": 2 } } },
+      "targets": [
+        { "expr": "rate(pg_stat_database_xact_commit{datname=\"anomaly_detection\"}[1m])", "legendFormat": "commit/s" },
+        { "expr": "rate(pg_stat_database_xact_rollback{datname=\"anomaly_detection\"}[1m])", "legendFormat": "rollback/s" }
+      ]
+    },
+    {
+      "id": 15, "type": "row",
+      "title": "RabbitMQ",
+      "gridPos": { "x": 0, "y": 27, "w": 24, "h": 1 }
+    },
+    {
+      "id": 16, "type": "timeseries",
+      "title": "Messages dans les queues RabbitMQ",
+      "gridPos": { "x": 0, "y": 28, "w": 24, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2 } } },
+      "targets": [
+        { "expr": "rabbitmq_queue_messages{namespace=\"pfe\"}", "legendFormat": "{{queue}} — messages" },
+        { "expr": "rabbitmq_queue_messages_ready{namespace=\"pfe\"}", "legendFormat": "{{queue}} — ready" }
+      ]
+    },
+    {
+      "id": 20, "type": "row",
+      "title": "API globale",
+      "gridPos": { "x": 0, "y": 35, "w": 24, "h": 1 }
+    },
+    {
+      "id": 21, "type": "timeseries",
+      "title": "Requêtes API globales / seconde",
+      "gridPos": { "x": 0, "y": 36, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "lineWidth": 2 } } },
+      "targets": [{ "expr": "sum(rate(api_http_requests_total[1m])) by (endpoint)", "legendFormat": "{{endpoint}}" }]
+    },
+    {
+      "id": 22, "type": "timeseries",
+      "title": "Taux d'erreurs 5xx API",
+      "gridPos": { "x": 12, "y": 36, "w": 12, "h": 7 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": { "defaults": { "unit": "percent", "custom": { "lineWidth": 2 } } },
+      "targets": [{ "expr": "100 * sum(rate(api_http_requests_total{status_code=~\"5..\"}[1m])) / sum(rate(api_http_requests_total[1m]))", "legendFormat": "erreurs %" }]
+    }
+  ]
+}
